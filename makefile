@@ -11,9 +11,9 @@ test-debug:
 	docker compose up --build test-debug
 
 test-cicd:
-	docker compose run --rm --build test-cicd
+	@docker build -t knowitall-cicd-test -f docker/Dockerfile . && \
+	docker run --rm -e DISABLE_TELEMETRY=True knowitall-cicd-test python -m unittest discover -s tests
 
-# Cleans up all unused images
 clean:
 	@docker system prune -a --force
 
