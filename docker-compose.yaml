@@ -167,10 +167,10 @@ services:
               count: 1
               capabilities: [gpu]
     command: [
-      "python", 
-      "-X", "frozen_modules=off", 
-      "-m", "debugpy", 
-      "--listen", "0.0.0.0:5678", 
-      "--wait-for-client", 
+      "python",
+      "-X", "frozen_modules=off",
+      "-m", "debugpy",
+      "--listen", "0.0.0.0:5678",
+      "--wait-for-client",
       "-m", "unittest", "discover", "-s", "tests"
     ]

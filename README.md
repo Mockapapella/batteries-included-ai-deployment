@@ -11,10 +11,10 @@ Batteries Included AI Deployment is just what it says, an all in one template to
 1. A way to manually run pre-commits on all code in your repository. Code quality matters!
 1. CI steps via GitHub Actions
 1. Full Observability with a Grafana Dashboard
-  1. Metrics via Prometheus
-  1. Tracing via Tempo
-  1. Logs via Loki
-  1. GPU monitoring via DCGM
+1. Metrics via Prometheus
+1. Tracing via Tempo
+1. Logs via Loki
+1. GPU monitoring via DCGM
 1. CD via GitHub actions and a `post-receive` hook on the server
 1. Alerts that email you when something goes wrong in production
 
@@ -78,13 +78,13 @@ Then make it executable with `chmod +x .git/hooks/pre-commit`. This will run pre
 To get alerts to work properly in production, you'll need to configure Grafana to send emails. If you're using Gmail, follow these steps to set up an App Password:
 
 1. Go to your Google Account settings (https://myaccount.google.com/).
-2. Navigate to the "Security" tab.
-3. Under "How you sign in to Google", find "2-Step Verification" and turn it on if it's not already enabled.
-4. After enabling 2-Step Verification, scroll down to find "App passwords" and click on it.
-5. Select "Other (Custom name)" from the dropdown menu.
-6. Enter a name for the app (e.g., "Grafana Alerts") and click "Create".
-7. Google will generate a 16-character app password. Copy this password.
-8. Use this App password in your Grafana SMTP configuration instead of your regular Gmail password.
+1. Navigate to the "Security" tab.
+1. Under "How you sign in to Google", find "2-Step Verification" and turn it on if it's not already enabled.
+1. After enabling 2-Step Verification, scroll down to find "App passwords" and click on it.
+1. Select "Other (Custom name)" from the dropdown menu.
+1. Enter a name for the app (e.g., "Grafana Alerts") and click "Create".
+1. Google will generate a 16-character app password. Copy this password.
+1. Use this App password in your Grafana SMTP configuration instead of your regular Gmail password.
 
 After generating the App Password, update the `./etc/grafana/grafana.ini` file with your email and password.
 
@@ -106,7 +106,7 @@ Alerts are going to be different for every person, but to test that they work yo
 This step is the most involved, but it's not too difficult to set up and is not even necessary if you only care about getting this set up locally. Before proceeding, make sure you have:
 
 1. A GPU server you have SSH access to. These instructions assume you are SSH'd into the server as the root user.
-2. That server has `docker`, `loki`, `CUDA`, and `make` installed on it (see setup above for instructions)
+1. That server has `docker`, `loki`, `CUDA`, and `make` installed on it (see setup above for instructions)
 
 On your local server, generate a new SSH keypair:
 
@@ -205,3 +205,16 @@ Then I set up a python configuration:
         },
 ```
 
+# Future work
+
+There are some things that I'd like to add at some point in the future but weren't critical to getting this first version up and running:
+
+1. `nvitop` dashboard instead of (in addition to?) DCGM.
+1. Grafana dashboard persistence between deployments. Right now it deletes alerts and changes made.
+1. Threaded logging since it's synchronous and blocking by default.
+
+# Credits
+
+Thanks to @blueswen's [fastapi-observability](https://github.com/blueswen/fastapi-observability) repo which formed a strong base for the observability parts of this repo.
+
+Thanks to @NVIDIA's [dcgm-exporter](https://github.com/NVIDIA/dcgm-exporter) which is what I'm using for the GPU dashboard.

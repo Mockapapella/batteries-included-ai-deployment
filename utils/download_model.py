@@ -1,7 +1,9 @@
 """Helper file for downloading models."""
 
 import os
-from transformers import AutoModelForCausalLM, AutoTokenizer
+
+from transformers import AutoModelForCausalLM
+from transformers import AutoTokenizer
 
 model_repo = "openai-community/gpt2"
 local_model_path = "/workspace/models/openai-community/gpt2"

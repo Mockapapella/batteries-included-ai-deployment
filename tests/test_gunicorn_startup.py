@@ -1,6 +1,7 @@
 import subprocess
 import time
 import unittest
+from typing import Union
 
 import requests
 
@@ -35,7 +36,10 @@ class TestGunicornStartup(unittest.TestCase):
     def test_generate_endpoint(self) -> None:
         """Make a call to the text generation endpoint."""
         url = "http://0.0.0.0:8000/generate/"
-        params = {"prompt": "Once upon a time", "max_length": 50}
+        params: dict[str, Union[str, int]] = {
+            "prompt": "Once upon a time",
+            "max_length": 50,
+        }
         response = requests.get(url, params=params)
         self.assertEqual(response.status_code, 200, "Expected status code to be 200 OK")
 

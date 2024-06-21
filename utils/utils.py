@@ -19,20 +19,14 @@ from utils.config import DISABLE_TELEMETRY
 
 def metrics(request: Request) -> Response:
     """Generate metrics for Prometheus."""
-    return Response(
-        generate_latest(REGISTRY), headers={"Content-Type": CONTENT_TYPE_LATEST}
-    )
+    return Response(generate_latest(REGISTRY), headers={"Content-Type": CONTENT_TYPE_LATEST})
 
 
-def setup_otlp(
-    app: ASGIApp, app_name: str, endpoint: str, log_correlation: bool = True
-) -> None:
+def setup_otlp(app: ASGIApp, app_name: str, endpoint: str, log_correlation: bool = True) -> None:
     """Setting up OpenTelemetry."""
     # Setting OpenTelemetry
     # set the service name to show in traces
-    resource = Resource.create(
-        attributes={"service.name": app_name, "compose_service": app_name}
-    )
+    resource = Resource.create(attributes={"service.name": app_name, "compose_service": app_name})
 
     # set the tracer provider
     tracer = TracerProvider(resource=resource)

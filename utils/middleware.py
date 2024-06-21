@@ -51,9 +51,7 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
         self.app_name = app_name
         INFO.labels(app_name=self.app_name).inc()
 
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         """Handles the middleware then forwards request onto the application."""
         method = request.method
         path, is_handled_path = self.get_path(request)
@@ -61,9 +59,7 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
         if not is_handled_path:
             return await call_next(request)
 
-        REQUESTS_IN_PROGRESS.labels(
-            method=method, path=path, app_name=self.app_name
-        ).inc()
+        REQUESTS_IN_PROGRESS.labels(method=method, path=path, app_name=self.app_name).inc()
         REQUESTS.labels(method=method, path=path, app_name=self.app_name).inc()
         before_time = time.perf_counter()
         try:
@@ -94,9 +90,7 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
                 status_code=status_code,
                 app_name=self.app_name,
             ).inc()
-            REQUESTS_IN_PROGRESS.labels(
-                method=method, path=path, app_name=self.app_name
-            ).dec()
+            REQUESTS_IN_PROGRESS.labels(method=method, path=path, app_name=self.app_name).dec()
 
         return response
 
