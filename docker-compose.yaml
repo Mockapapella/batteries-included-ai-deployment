@@ -136,7 +136,6 @@ services:
     command: ["python", "-m", "unittest", "discover", "-s", "tests"]
     environment:
       DISABLE_TELEMETRY: "True"
-    logging: *default-logging
 
   test-cicd:
     build:
@@ -146,7 +145,6 @@ services:
     command: ["python", "-m", "unittest", "discover", "-s", "tests"]
     environment:
       DISABLE_TELEMETRY: "True"
-    logging: *default-logging
 
   test-debug:
     build:
