@@ -1,0 +1,25 @@
+FROM python:3.11-bookworm
+
+WORKDIR /workspace
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY utils/download_model.py ./
+
+# Create a non-root user with the same UID and GID as the host user
+ARG UID
+ARG GID
+RUN addgroup --gid $GID appuser && \
+    adduser --disabled-password --gecos '' --uid $UID --gid $GID appuser
+
+# Ensure the /workspace/models directory has the correct permissions and ownership
+RUN mkdir -p /workspace/models && \
+    chown -R appuser:appuser /workspace/models && \
+    chmod -R 777 /workspace/models
+
+# Switch to the non-root user
+USER appuser
+
+# Run the script to download and cache the model
+CMD ["python", "download_model.py"]

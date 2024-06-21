@@ -1,0 +1,176 @@
+x-logging: &default-logging
+  driver: loki
+  options:
+    loki-url: 'http://localhost:3100/api/prom/push'
+    loki-pipeline-stages: |
+      - multiline:
+          firstline: '^\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2}'
+          max_wait_time: 3s
+      - regex:
+          expression: '^(?P<time>\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2},d{3}) (?P<message>(?s:.*))$$'
+
+services:
+  loki:
+    image: grafana/loki:3.0.0
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: api
+    container_name: api
+    ports:
+      - "8000:8000"
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: ["gunicorn", "main:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--workers", "1", "--bind", "0.0.0.0:8000"]
+    tty: true
+    stdin_open: true
+    restart: always
+    depends_on:
+      - loki
+    environment:
+      APP_NAME: "api"
+    logging: *default-logging
+
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./etc/prometheus:/workspace
+    command:
+      - --config.file=/workspace/prometheus.yml
+      - --enable-feature=exemplar-storage
+    depends_on:
+      - loki
+    logging: *default-logging
+
+  tempo:
+    image: grafana/tempo:2.4.1
+    command: [ "--target=all", "--storage.trace.backend=local", "--storage.trace.local.path=/var/tempo", "--auth.enabled=false" ]
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - loki
+    logging: *default-logging
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./etc/grafana/:/etc/grafana/provisioning/datasources
+      - ./etc/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+      - ./etc/dashboards:/etc/grafana/dashboards
+    depends_on:
+      - loki
+      - prometheus
+    logging: *default-logging
+
+  dcgm:
+    image: nvcr.io/nvidia/k8s/dcgm-exporter:3.3.6-3.4.2-ubuntu22.04
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    ports:
+      - "9400:9400"
+    depends_on:
+      - loki
+    logging: *default-logging
+
+  api-debug:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: api-debug
+    container_name: api-debug
+    ports:
+      - "8000:8000"
+      - "5678:5678"
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: ["python", "-X", "frozen_modules=off", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "-m", "gunicorn", "main:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--workers", "1", "--bind", "0.0.0.0:8000"]
+    tty: true
+    stdin_open: true
+    restart: always
+    depends_on:
+      - loki
+    environment:
+      APP_NAME: "api"
+    logging: *default-logging
+
+  test:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: api-test
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: ["python", "-m", "unittest", "discover", "-s", "tests"]
+    environment:
+      DISABLE_TELEMETRY: "True"
+    logging: *default-logging
+
+  test-cicd:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: api-test
+    command: ["python", "-m", "unittest", "discover", "-s", "tests"]
+    environment:
+      DISABLE_TELEMETRY: "True"
+    logging: *default-logging
+
+  test-debug:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - .:/workspace
+    environment:
+      DISABLE_TELEMETRY: "True"
+    ports:
+      - "5678:5678"
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: [
+      "python", 
+      "-X", "frozen_modules=off", 
+      "-m", "debugpy", 
+      "--listen", "0.0.0.0:5678", 
+      "--wait-for-client", 
+      "-m", "unittest", "discover", "-s", "tests"
+    ]

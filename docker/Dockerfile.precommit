@@ -1,0 +1,29 @@
+FROM python:3.11-bookworm
+
+WORKDIR /workspace
+RUN apt-get update && apt-get install -y git
+RUN pip install pre-commit==3.7.1
+
+COPY .pre-commit-config.yaml .pre-commit-config.yaml
+
+RUN git init && \
+    git config --global user.email "you@example.com" && \
+    git config --global user.name "Your Name" && \
+    git config --global --add safe.directory /workspace
+
+# Create a non-root user with the same UID and GID as the host user
+ARG UID
+ARG GID
+RUN addgroup --gid $GID appuser && \
+    adduser --disabled-password --gecos '' --uid $UID --gid $GID appuser
+
+# Change ownership of the workspace to the non-root user
+RUN chown -R appuser:appuser /workspace
+
+# Switch to the non-root user
+USER appuser
+
+RUN pre-commit install --install-hooks
+COPY . .
+
+CMD ["bash"]
