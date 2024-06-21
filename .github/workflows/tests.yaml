@@ -27,6 +27,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
+      - name: Run setup
+        # Download models
+        run: make setup
+
       - name: Build and run tests
         # Run CICD specific tests that do not enable the GPU. You can just run `make test` if you have GPU test runners.
         run: make test-cicd
