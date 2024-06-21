@@ -1,13 +1,12 @@
 import subprocess
 import time
 import unittest
-from typing import Union
 
 import requests
 
 
 class TestGunicornStartup(unittest.TestCase):
-    server_process: subprocess.Popen | None = None
+    server_process: subprocess.Popen | None = None  # Type annotation
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -33,13 +32,10 @@ class TestGunicornStartup(unittest.TestCase):
             cls.server_process.terminate()
             cls.server_process.wait()
 
-    def test_generate_endpoint(self) -> None:
-        """Make a call to the text generation endpoint."""
-        url = "http://0.0.0.0:8000/generate/"
-        params: dict[str, Union[str, int]] = {
-            "prompt": "Once upon a time",
-            "max_length": 50,
-        }
+    def test_predict_endpoint(self) -> None:
+        """Make a call to the prediction endpoint."""
+        url = "http://localhost:8000/predict/"
+        params = {"message": "This is a test message"}
         response = requests.get(url, params=params)
         self.assertEqual(response.status_code, 200, "Expected status code to be 200 OK")
 
