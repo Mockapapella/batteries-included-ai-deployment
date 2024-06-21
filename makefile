@@ -45,4 +45,4 @@ precommit-all:
 	docker run --rm -v $(shell pwd):/workspace precommit-all bash -c "pre-commit run --all-files"
 
 request:
-	curl -X GET "http://localhost:8000/generate/?prompt=Once%20upon%20a%20time%20in%20a%20galaxy%20far,%20far%20away&max_length=100"
+	curl -X GET "http://localhost:8000/predict/?message=This%20is%20a%20test%20message"
