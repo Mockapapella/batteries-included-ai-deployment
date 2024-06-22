@@ -1,5 +1,9 @@
 # What is this?
 
+![Screenshot of the API dashboard with many different graphs shown](images/api.png)
+
+![Screenshot of the GPU dashboard with many different graphs shown](images/gpu.png)
+
 Batteries Included AI Deployment is just what it says, an all in one template to deploy AI models with the highest quality dev experience out of the box. This repo contains:
 
 1. A way to download and cache models straight from huggingface
